@@ -131,4 +131,4 @@ app.MapControllers();
 //{
 //    app.UseDeveloperExceptionPage();
 //}
-app.Run(); 
+app.Run();
