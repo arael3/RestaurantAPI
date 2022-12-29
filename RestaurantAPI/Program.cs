@@ -21,12 +21,12 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 
-// --- II - dodanie zale¿noœci/serwisów w kontenerze dependecy injections ---
+// --- II - dodanie zaleÂ¿noÅ“ci/serwisÃ³w w kontenerze dependecy injections ---
 
 // START - uwierzytelnianie w oparciu o Json Web Token (JWT)
 var authenticationSettings = new AuthenticationSettings(); // [1] utworznie obiektu klasy AuthenticationSettings
-builder.Configuration.GetSection("Authentication").Bind(authenticationSettings); // [2] powi¹zanie obiektu klasy AuthenticationSettings z konfiguracj¹ zdefiniowan¹ w pliku appsettings.json w sekcji Authentication
-builder.Services.AddSingleton(authenticationSettings); // [3] wstrzykniêcie konfiguracji z pliku appsettings.json
+builder.Configuration.GetSection("Authentication").Bind(authenticationSettings); // [2] powiÂ¹zanie obiektu klasy AuthenticationSettings z konfiguracjÂ¹ zdefiniowanÂ¹ w pliku appsettings.json w sekcji Authentication
+builder.Services.AddSingleton(authenticationSettings); // [3] wstrzykniÃªcie konfiguracji z pliku appsettings.json
 builder.Services
     .AddAuthentication(option =>
     {
@@ -37,28 +37,28 @@ builder.Services
     .AddJwtBearer(cfg =>
     {
         cfg.RequireHttpsMetadata = false;  // nie wymuszamy na kliencie logowania przez https
-        cfg.SaveToken = true;  // dany token powinien zostaæ zapisany po stronie serwera do celów uwierzytelniania
-        cfg.TokenValidationParameters = new TokenValidationParameters  // parametry walidacji, umo¿liwiajace sprawdzenie czy token wys³any przez klienta jest zgodny z tym co wie serwer
+        cfg.SaveToken = true;  // dany token powinien zostaÃ¦ zapisany po stronie serwera do celÃ³w uwierzytelniania
+        cfg.TokenValidationParameters = new TokenValidationParameters  // parametry walidacji, umoÂ¿liwiajace sprawdzenie czy token wysÂ³any przez klienta jest zgodny z tym co wie serwer
         {
             ValidIssuer = authenticationSettings.JwtIssuer,  // ustalenie issuer - czyli wydawca danego tokenu
-            ValidAudience = authenticationSettings.JwtIssuer,  // audience - czyli jakie podmioty mog¹ u¿ywaæ tokenu, w tym przypadku jest to ta sama wartoœæ co dla ValidIssuer, poniewa¿ bêdziemy generowaæ token w obrêbie naszej aplikacji i tylko tacy klienci bêd¹ dopuszczeni do uwierzytelniania
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)) // signing key - klucz prywatny wygenerowany na podstawie wartoœci authenticationSettings.JwtKey, czyli zapisanej w appsettings.json >> "Authentication" >> "JwtKey": "PRIVATE_KEY_DOTN_SHARE"
+            ValidAudience = authenticationSettings.JwtIssuer,  // audience - czyli jakie podmioty mogÂ¹ uÂ¿ywaÃ¦ tokenu, w tym przypadku jest to ta sama wartoÅ“Ã¦ co dla ValidIssuer, poniewaÂ¿ bÃªdziemy generowaÃ¦ token w obrÃªbie naszej aplikacji i tylko tacy klienci bÃªdÂ¹ dopuszczeni do uwierzytelniania
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)) // signing key - klucz prywatny wygenerowany na podstawie wartoÅ“ci authenticationSettings.JwtKey, czyli zapisanej w appsettings.json >> "Authentication" >> "JwtKey": "PRIVATE_KEY_DOTN_SHARE"
         };
     });
 
-// CUSTOMOWE regu³y autoryzacji
-// Rozbudowa autoryzacji w oparciu o w³asn¹ (customow¹) politykê
-// poni¿sza polityka o nazwie "HasNationality" dzia³a w ten sposób, ¿e wymaga aby ¿¹danie (claim) o nazwie "Nationality" istnia³o w tokenie oraz aby wartoœæ jego wartoœæ by³a równa "Polish"
-// Je¿eli claim o nazwie "Nationality" nie istnieje w tokenie, u¿ytkownik nie otrzyma autoryzacji do wykonania danej akcji.
-// przyk³adowo claim "Nationality" nie jest dodawany w tokenie dla u¿ytkownika, który nie ma wype³nionego pola "Nationality"
-// metoda RequireClaim() mo¿e przyjmowaæ wiele parametów, które spe³niaj¹ warunki np. RequireClaim("Nationality", "Polish", "Czech", "German")
+// CUSTOMOWE reguÂ³y autoryzacji
+// Rozbudowa autoryzacji w oparciu o wÂ³asnÂ¹ (customowÂ¹) politykÃª
+// poniÂ¿sza polityka o nazwie "HasNationality" dziaÂ³a w ten sposÃ³b, Â¿e wymaga aby Â¿Â¹danie (claim) o nazwie "Nationality" istniaÂ³o w tokenie oraz aby wartoÅ“Ã¦ jego wartoÅ“Ã¦ byÂ³a rÃ³wna "Polish"
+// JeÂ¿eli claim o nazwie "Nationality" nie istnieje w tokenie, uÂ¿ytkownik nie otrzyma autoryzacji do wykonania danej akcji.
+// przykÂ³adowo claim "Nationality" nie jest dodawany w tokenie dla uÂ¿ytkownika, ktÃ³ry nie ma wypeÂ³nionego pola "Nationality"
+// metoda RequireClaim() moÂ¿e przyjmowaÃ¦ wiele parametÃ³w, ktÃ³re speÂ³niajÂ¹ warunki np. RequireClaim("Nationality", "Polish", "Czech", "German")
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("HasNationality", builder => builder.RequireClaim("Nationality", "Polish", "Czech"));
     options.AddPolicy("IsAdult", builder => builder.AddRequirements(new MinimumAgeRequirement(18)));
     options.AddPolicy("IsCreator", builder => builder.AddRequirements(new MinimumCreatedRestaurantsRequirement(2)));
 });
-builder.Services.AddScoped<IAuthorizationHandler, MinimumAgeRequirementHandler>();  // rejestracja serwisu odpowiadaj¹cego za obs³u¿enie autoryzacji w oparciu o w³asn¹ (customow¹) politykê o nazwie "IsAdult" ze zdefiniowanymi w metodzie AddRequirements() w³asnymi wymaganiami - w tym przypadku wymaganym minimalnym wiekiem u¿ytkownika - u¿ytkownik, którego wiek jest mniejszy od minimalnego, nie otrzyma autoryzacji do wykonania danej akcji
+builder.Services.AddScoped<IAuthorizationHandler, MinimumAgeRequirementHandler>();  // rejestracja serwisu odpowiadajÂ¹cego za obsÂ³uÂ¿enie autoryzacji w oparciu o wÂ³asnÂ¹ (customowÂ¹) politykÃª o nazwie "IsAdult" ze zdefiniowanymi w metodzie AddRequirements() wÂ³asnymi wymaganiami - w tym przypadku wymaganym minimalnym wiekiem uÂ¿ytkownika - uÂ¿ytkownik, ktÃ³rego wiek jest mniejszy od minimalnego, nie otrzyma autoryzacji do wykonania danej akcji
 builder.Services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, MinimumCreatedRestaurantsRequirementHandler>();
 // END - uwierzytelnianie w oparciu o Json Web Token (JWT)
@@ -72,7 +72,7 @@ builder.Host.UseNLog();
 
 builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
 builder.Services.AddDbContext<RestaurantDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("RestaurantDbConnection")));
-// Dodanie serwisu RestaurantSeeder poprzez metodê AddScoped(). Serwis RestaurantSeeder umo¿liwia za³adowanie do bazy danych seedów (rekordów), od razu po uruchomieniu aplikacji. Dzieje siê to porzez uruchomienie metody Seed(), która jest wywo³ywana poni¿ej. Aby mo¿na by³o odwo³aæ siê do metody Seed(), potrzebne jest utworzenie scope poprzez metodê CreateScope(), a nastêpnie z wykorzystaniem utworzonego scope odwo³anie siê do serwisu RestaurantSeeder poprzez metodê GetRequiredService().
+// Dodanie serwisu RestaurantSeeder poprzez metodÃª AddScoped(). Serwis RestaurantSeeder umoÂ¿liwia zaÂ³adowanie do bazy danych seedÃ³w (rekordÃ³w), od razu po uruchomieniu aplikacji. Dzieje siÃª to porzez uruchomienie metody Seed(), ktÃ³ra jest wywoÂ³ywana poniÂ¿ej. Aby moÂ¿na byÂ³o odwoÂ³aÃ¦ siÃª do metody Seed(), potrzebne jest utworzenie scope poprzez metodÃª CreateScope(), a nastÃªpnie z wykorzystaniem utworzonego scope odwoÂ³anie siÃª do serwisu RestaurantSeeder poprzez metodÃª GetRequiredService().
 builder.Services.AddScoped<RestaurantSeeder>();
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IDishService, DishService>();
@@ -84,7 +84,7 @@ builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator
 builder.Services.AddScoped<IValidator<RestaurantQuery>, RestaurantQueryValidator>();
 
 builder.Services.AddScoped<IUserContextService, UserContextService>();
-builder.Services.AddHttpContextAccessor(); // rejestracja tego serwisu umo¿liwi wstrzykniêcie do klasy UserContextService referencji do obiektu typu IHttpContextAccessor, który jest wykorzystywany w customowej klasie UserContextService. Klasa UserContextService jest odpowiedzialna za udostêpnianie informacji o danym u¿ytkowniku na podstawie kontekstu Http
+builder.Services.AddHttpContextAccessor(); // rejestracja tego serwisu umoÂ¿liwi wstrzykniÃªcie do klasy UserContextService referencji do obiektu typu IHttpContextAccessor, ktÃ³ry jest wykorzystywany w customowej klasie UserContextService. Klasa UserContextService jest odpowiedzialna za udostÃªpnianie informacji o danym uÂ¿ytkowniku na podstawie kontekstu Http
 
 builder.Services.AddSwaggerGen();
 
@@ -103,9 +103,9 @@ var app = builder.Build();
 
 
 
-// --- III - rejestrowanie przep³ywów zapytania / ustawienie middleware  ---
+// --- III - rejestrowanie przepÂ³ywÃ³w zapytania / ustawienie middleware  ---
 app.UseResponseCaching(); // Odpowiada za mechanizm keszowania
-app.UseStaticFiles();  // Dodajemy na pocz¹tku listy przep³ywów, aby aplikacja dla ka¿dego zapytania sprawdza³a, czy pod œcie¿k¹ do zapytania nie istnieje jakiœ plik
+app.UseStaticFiles();  // Dodajemy na poczÂ¹tku listy przepÂ³ywÃ³w, aby aplikacja dla kaÂ¿dego zapytania sprawdzaÂ³a, czy pod Å“cieÂ¿kÂ¹ do zapytania nie istnieje jakiÅ“ plik
 app.UseCors("FrontEndClient");
 
 var scope = app.Services.CreateScope();
@@ -113,8 +113,8 @@ var seeder = scope.ServiceProvider.GetRequiredService<RestaurantSeeder>();
 seeder.Seed();
 app.UseMiddleware<RequestTimeMiddleware>();
 app.UseMiddleware<ErrorHandlingMiddleware>();
-app.UseAuthentication(); // odpowiada za to, ¿e ka¿dy request wys³any przez klienta api musi podlegaæ uwierzytelnianiu 
-// app.UseAuthentication() nale¿y umieœciæ przed app.UseHttpsRedirection()
+app.UseAuthentication(); // odpowiada za to, Â¿e kaÂ¿dy request wysÂ³any przez klienta api musi podlegaÃ¦ uwierzytelnianiu 
+// app.UseAuthentication() naleÂ¿y umieÅ“ciÃ¦ przed app.UseHttpsRedirection()
 app.UseHttpsRedirection();
 
 app.UseSwagger();
@@ -124,11 +124,11 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseAuthorization();
-// app.UseAuthorization() nale¿y umieœciæ przed app.MapControllers()
+// app.UseAuthorization() naleÂ¿y umieÅ“ciÃ¦ przed app.MapControllers()
 app.MapControllers();
 
 //if (app.Environment.IsDevelopment())
 //{
 //    app.UseDeveloperExceptionPage();
 //}
-app.Run();
+app.Run(); 
