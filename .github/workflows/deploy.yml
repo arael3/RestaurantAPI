@@ -50,7 +50,7 @@ jobs:
         uses: Azure/webapps-deploy@v2.2.5
         with:
           # Name of the Azure Web App
-          app-name: 'restaurant-api-dev'
+          app-name: 'restaurant-api-myapp'
           # Applies to Web Apps(Windows and Linux) and Web App Containers(linux). 
           # Multi container scenario not supported. Publish profile (*.publishsettings) file contents with Web Deploy secrets
           publish-profile: ${{ secrets.PUBLISH_PROFILE_DEV }}
