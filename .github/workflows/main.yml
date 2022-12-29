@@ -1,0 +1,28 @@
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Krok 1 - Uses the major version of a release
+        # Odniesienie się do głównego wydania aplikacji
+        uses: actions/checkout@v2
+      - name: Krok 2 - Setup .NET Core SDK
+        # Pobranie .NET Core SDK
+        uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: 6.0.x
+      - name: Krok 3 - Restore dependencies
+        # Pobranie paczek Nuget
+        run: dotnet restore
+      - name: Krok 4 - Build
+        # Zbudowanie aplikacji z projektu
+        run: dotnet build --no-restore
+      - name: Krok 5 - Test
+        # Wykonanie testu zbudowanej aplikacji
+        run: dotnet test
