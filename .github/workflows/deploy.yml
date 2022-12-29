@@ -20,14 +20,38 @@ jobs:
       - name: Krok 4 - Build
         # Zbudowanie aplikacji z projektu
         run: dotnet build --no-restore
-      - name: Publish
+      - name: Krok 5 - Publish
         # Publikacja: 
         # ./...  - określenie ścieżki projektu, który chcemy opublikować
         # -o ...  - określenie ścieżki, do której paczka zostanie wrzucona 
         run: dotnet publish ./RestaurantAPI/RestaurantAPI.csproj -c Release -o ${{ env.DOTNET_ROOT }}/api
+      - name: Krok 6 - upload artifact
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: api-artifact
+          path: ${{ env.DOTNET_ROOT }}/api
   
+  # Przykładowa konfiguracja deploy'a na platformę Azure - parametry takie jak np. app-name, publish-profile 
+  # należy ustawić tak, aby odpowiadały wybranym zasobom na Azure
   deploy-dev:
     runs-on: ubuntu-latest
     needs: build
+    environment: 
+      name: 'Dev'
+      url: ${{ steps.deploy-to-azure.outputs.webapp-url }}
     steps:
+      - name: Krok 1 - Download a Build Artifact
+        uses: actions/download-artifact@v3.0.1
+        with:
+          # Artifact name
+          name: api-artifact
+      - name: Krok 2 - Azure WebApp deploy
+        id: deploy-to-azure
+        uses: Azure/webapps-deploy@v2.2.5
+        with:
+          # Name of the Azure Web App
+          app-name: 'restaurant-api-dev'
+          # Applies to Web Apps(Windows and Linux) and Web App Containers(linux). 
+          # Multi container scenario not supported. Publish profile (*.publishsettings) file contents with Web Deploy secrets
+          publish-profile: ${{ secrets.PUBLISH_PROFILE_DEV }}
 
