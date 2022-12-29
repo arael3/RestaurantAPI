@@ -24,7 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 // --- II - dodanie zale¿noœci/serwisów w kontenerze dependecy injections ---
 
 // START - uwierzytelnianie w oparciu o Json Web Token (JWT)
-var authenticationSettings = new AuthenticationSettings() // [1] utworznie obiektu klasy AuthenticationSettings
+var authenticationSettings = new AuthenticationSettings(); // [1] utworznie obiektu klasy AuthenticationSettings
 builder.Configuration.GetSection("Authentication").Bind(authenticationSettings); // [2] powi¹zanie obiektu klasy AuthenticationSettings z konfiguracj¹ zdefiniowan¹ w pliku appsettings.json w sekcji Authentication
 builder.Services.AddSingleton(authenticationSettings); // [3] wstrzykniêcie konfiguracji z pliku appsettings.json
 builder.Services
