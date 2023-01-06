@@ -31,7 +31,7 @@ jobs:
           name: api-artifact
           path: ${{ env.DOTNET_ROOT }}/api
   
-  # Przykładowa konfiguracja deploy'a na platformę Azure - parametry takie jak np. app-name, publish-profile 
+  # Przykładowa konfiguracja deploy'a (na środowisko developerskie) na platformę Azure - parametry takie jak np. app-name, publish-profile 
   # należy ustawić tak, aby odpowiadały wybranym zasobom na Azure
   deploy-dev:
     runs-on: ubuntu-latest
@@ -54,4 +54,29 @@ jobs:
           # Applies to Web Apps(Windows and Linux) and Web App Containers(linux). 
           # Multi container scenario not supported. Publish profile (*.publishsettings) file contents with Web Deploy secrets
           publish-profile: ${{ secrets.PUBLISH_PROFILE_DEV }}
+          
+  ## Oczywiście deploy'a można także przygotować pod środowisko produkcyjne
+  ## Przykładowa konfiguracja deploy'a (na środowisko produkcyjne) na platformę Azure - parametry takie jak np. app-name, publish-profile 
+  ## należy ustawić tak, aby odpowiadały wybranym zasobom na Azure
+  #deploy-prod:
+    #runs-on: ubuntu-latest
+    #needs: deploy-dev
+    #environment: 
+      #name: 'Prod'
+      #url: ${{ steps.deploy-to-azure.outputs.webapp-url }}
+    #steps:
+      #- name: Krok 1 - Download a Build Artifact
+        #uses: actions/download-artifact@v3.0.1
+        #with:
+          ## Artifact name
+          #name: api-artifact
+      #- name: Krok 2 - Azure WebApp deploy
+        #id: deploy-to-azure
+        #uses: Azure/webapps-deploy@v2.2.5
+        #with:
+          ## Name of the Azure Web App
+          #app-name: 'restaurant-api-myapp-prod'
+          ## Applies to Web Apps(Windows and Linux) and Web App Containers(linux). 
+          ## Multi container scenario not supported. Publish profile (*.publishsettings) file contents with Web Deploy secrets
+          #publish-profile: ${{ secrets.PUBLISH_PROFILE_PROD }}
 
